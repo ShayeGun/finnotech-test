@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # nest_app:
+  #   build: .
+  #   image: fintech-nest
+  #   env_file: .env
+  #   ports:
+  #     - '${APP_PORT}:${APP_PORT}'
+  #   depends_on:
+  #     - nest_db
+  #     - nest_cache
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   networks:
+  #     - first_nest
+# ----
+  nest_db:
+    image: postgres:15
+    ports:
+      - 5434:5432
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - dbdata6:/data/db
+    networks:
+      - first_nest
+# ----
+  nest_cache:
+    image: 'redis:bookworm'
+    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
+    env_file:
+      - .env
+    ports:
+      - '6379:6379'
+    volumes:
+      - dbdata6:/data/db
+    networks:
+      - first_nest
+
+volumes:
+  dbdata6:
+
+networks:
+  first_nest:
