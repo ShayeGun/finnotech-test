@@ -119,7 +119,7 @@ describe('AuthController (e2e)', () => {
         return expect(response.status).toEqual(400);
     });
 
-    it('auth/signup/1234 (POST) - FAILED - email not verified', async () => {
+    it('auth/signup/1234 (POST) - SUCCESS', async () => {
         const data = { email: 'test@test.com', password: 'Test@123' };
         await cacheService.set('1234', data.email);
         const response = await request(app.getHttpServer()).post('/auth/signup/1234').send(data);
