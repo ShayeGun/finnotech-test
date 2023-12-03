@@ -76,9 +76,8 @@ export class AuthService {
     async login(@Body() body: CreateUserDto) {
         const existedUser = await this.userService.findOne(body.email);
 
-        if (!existedUser) throw new BadRequestException('no such user');
-
-        if (!await compare(body.password, existedUser.password)) throw new UnauthorizedException("incorrect password");
+        if (!existedUser || !await compare(body.password, existedUser.password))
+            throw new BadRequestException('incorrect credentials');
 
         const { accessToken } = await this.generateTokens(existedUser);
 
