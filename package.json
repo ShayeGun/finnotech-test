@@ -30,6 +30,7 @@
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/mongoose": "^10.0.1",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.1.16",
     "@nestjs/throttler": "^5.0.1",
     "@nestjs/typeorm": "^10.0.0",
     "bcrypt": "^5.1.1",

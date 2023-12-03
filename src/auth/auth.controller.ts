@@ -5,12 +5,16 @@ import { EmailDto } from "./Dtos/email.dto";
 import { RemovePasswordInterceptor } from "./auth.interceptor";
 import { User } from "../decorators/current-user.decorator";
 import { BaseGuard } from "./guard";
+import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { PreSignUpResponseDto } from "./Dtos/response/pre-signup.dto";
 
+@ApiTags('Authentication')
 @UseInterceptors(RemovePasswordInterceptor)
 @Controller('auth')
 export class authController {
     constructor(private readonly authService: AuthService) { };
 
+    @ApiOkResponse({ description: "send email for validating email", type: PreSignUpResponseDto })
     @Post('signup')
     mail(@Body() body: EmailDto) {
         return this.authService.preSignup(body);

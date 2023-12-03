@@ -3,7 +3,9 @@ import { PostService } from './post.service';
 import { CreatePostDto, PostQueryDto } from './Dtos';
 import { User } from '../decorators/current-user.decorator';
 import { BaseGuard } from '../auth/guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Posts')
 @UseGuards(BaseGuard)
 @Controller('post')
 export class PostController {
