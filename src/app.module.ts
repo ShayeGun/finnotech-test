@@ -10,10 +10,8 @@ import { Post } from './post/schema/post.schema';
 import { RedisModule } from './redis/redis.module';
 import * as nodemailer from 'nodemailer';
 import { MailModule } from './mail/mail.module';
-import { Redis } from 'ioredis';
 import { PostModule } from './post/post.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-
 
 @Module({
   imports: [
@@ -21,10 +19,12 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -35,48 +35,46 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
         password: configService.getOrThrow('DATABASE_PASS'),
         synchronize: configService.getOrThrow('DATABASE_SYNCHRONIZE'),
         entities: [User, Post],
-        migrations: ["src/migrations/*{.ts,.js}"],
+        migrations: ['src/migrations/*{.ts,.js}'],
         cli: {
-          migrationsDir: "./src/migrations"
-        }
-      })
+          migrationsDir: './src/migrations',
+        },
+      }),
     }),
     AuthModule,
     UserModule,
     PostModule,
-    RedisModule.register(
-      {
-        useFactory: (configService: ConfigService) => new Redis({
-          host: configService.getOrThrow('REDIS_URL'),
-          port: configService.getOrThrow('REDIS_PORT'),
-          password: configService.getOrThrow('REDIS_PASSWORD'),
-        }),
-        inject: [ConfigService]
-      }
-    ),
-    MailModule.register({
-      useFactory: (configService: ConfigService) => nodemailer.createTransport({
-        host: configService.getOrThrow('MAIL_HOST'),
-        port: configService.getOrThrow('MAIL_PORT'),
-        secure: true,
-        auth: {
-          user: configService.getOrThrow('MAIL_USER'),
-          pass: configService.getOrThrow('MAIL_PASSWORD'),
-        }
+    RedisModule.register({
+      useFactory: (configService: ConfigService) => ({
+        host: configService.getOrThrow('REDIS_URL'),
+        port: configService.getOrThrow('REDIS_PORT'),
+        password: configService.getOrThrow('REDIS_PASSWORD'),
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
+    }),
+    MailModule.register({
+      useFactory: (configService: ConfigService) =>
+        nodemailer.createTransport({
+          host: configService.getOrThrow('MAIL_HOST'),
+          port: configService.getOrThrow('MAIL_PORT'),
+          secure: true,
+          auth: {
+            user: configService.getOrThrow('MAIL_USER'),
+            pass: configService.getOrThrow('MAIL_PASSWORD'),
+          },
+        }),
+      inject: [ConfigService],
     }),
   ],
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard
+      useClass: ThrottlerGuard,
     },
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: HttpExceptionFilter,
-    // },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
-
-export class AppModule { }
+export class AppModule {}

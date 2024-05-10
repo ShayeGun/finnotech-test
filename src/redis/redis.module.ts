@@ -1,27 +1,48 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { REDIS_CLIENT } from './constants';
+import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import { REDIS_OPTIONS } from './constants';
+import {RedisAsyncOptions} from './redis.interface';
+import {RedisProvider} from './redis.service';
 
-
-interface OptionInterface {
-  useFactory: (...args) => any;
-
-  inject?: any[];
-}
-
+@Global()
 @Module({})
 export class RedisModule {
-  static register(otp: OptionInterface): DynamicModule {
+  static register(options: RedisAsyncOptions): DynamicModule {
 
-    const RedisProvider: Provider = {
-      provide: REDIS_CLIENT,
-      ...otp
-    };
-
+    const providers = [...this.createAsyncProviders(options), RedisProvider];
     return {
       module: RedisModule,
-      providers: [RedisProvider],
-      exports: [RedisProvider],
-      global: true
+      imports: options.imports || [],
+      providers,
+      exports: providers,
+    };
+  }
+
+  private static createAsyncProviders(options: RedisAsyncOptions): Provider[] {
+    if (options.useExisting || options.useFactory) {
+      return [this.createAsyncOptionsProvider(options)];
+    }
+    return [
+      this.createAsyncOptionsProvider(options),
+      {
+        provide: options.useClass,
+        useClass: options.useClass,
+      },
+    ];
+  }
+
+  private static createAsyncOptionsProvider(options: RedisAsyncOptions): Provider {
+    if (options.useFactory) {
+      return {
+        provide: REDIS_OPTIONS,
+        useFactory: options.useFactory,
+        inject: options.inject || [],
+      };
+    }
+    return {
+      provide: REDIS_OPTIONS,
+      useFactory: async (optionsFactory: any) =>
+        await optionsFactory.createThrottlerOptions(),
+      inject: [options.useExisting || options.useClass],
     };
   }
 }
